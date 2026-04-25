@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Agenda App</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>📅 Minha Agenda</h1>
+
+        <!-- FORMULÁRIO -->
+        <form action="/add" method="POST">
+            <input type="text" name="task" placeholder="Nova tarefa" required>
+
+            <input type="date" name="date">
+
+            <input type="text" name="comment" placeholder="Comentário">
+
+            <button type="submit">Adicionar</button>
+        </form>
+
+        <hr>
+
+        <!-- LISTA DE TAREFAS -->
+        <h2>Tarefas</h2>
+
+        <ul>
+            {% for t in tasks %}
+            <li>
+                <div class="task-box">
+                    
+                    <strong>{{ t[1] }}</strong>
+
+                    {% if t[2] %}
+                        <p>📅 Data: {{ t[2] }}</p>
+                    {% else %}
+                        <p>📅 Sem data</p>
+                    {% endif %}
+
+                    {% if t[3] is not none %}
+                        <p>⏳ Dias restantes: {{ t[3] }}</p>
+                    {% endif %}
+
+                    {% if t[4] %}
+                        <p>📝 {{ t[4] }}</p>
+                    {% endif %}
+
+                    <a href="/delete/{{ t[0] }}">
+                        ❌ Excluir
+                    </a>
+
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+</body>
+</html>
