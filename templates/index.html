@@ -43,12 +43,16 @@
             text-align: center;
         }
 
-        /* ✅ Alinhar texto à esquerda */
+        /* alinhamentos */
         .text-left {
             text-align: left;
         }
 
-        /* ✅ Cores dos dias */
+        .text-center {
+            text-align: center;
+        }
+
+        /* cores */
         .vermelho {
             color: red;
             font-weight: bold;
@@ -88,21 +92,18 @@
 
     {% for task in tasks %}
     <tr>
-        <!-- ✅ alinhado à esquerda -->
         <td class="text-left">{{ task[1] }}</td>
 
-        <td>{{ task[2] }}</td>
-        <td>{{ task[4] }}</td>
+        <td class="text-center">{{ task[2] }}</td>
+        <td class="text-center">{{ task[4] }}</td>
 
-        <!-- dias restantes -->
-        <td class="dias-restantes" data-date="{{ task[2] }}">
+        <td class="dias-restantes text-center" data-date="{{ task[2] }}">
             {{ task[3] }}
         </td>
 
-        <!-- ✅ alinhado à esquerda -->
         <td class="text-left">{{ task[5] }}</td>
 
-        <td>
+        <td class="text-center">
             <a href="/delete/{{ task[0] }}">Excluir</a>
         </td>
     </tr>
@@ -132,7 +133,6 @@ function aplicarCor(el, dias) {
     } else if (dias >= 4 && dias < 10) {
         el.classList.add("verde");
     }
-    // 10+ dias = sem cor (preto normal)
 }
 
 function atualizarDias() {
@@ -152,7 +152,7 @@ function atualizarDias() {
 // executa ao abrir
 atualizarDias();
 
-// atualiza sozinho
+// atualiza automaticamente
 setInterval(atualizarDias, 60000);
 </script>
 
