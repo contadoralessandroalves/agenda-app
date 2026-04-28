@@ -50,7 +50,18 @@ def index():
                 # date já vem como date do postgres, não precisa strptime
                 date_obj = date
                 days_left = (date_obj - datetime.now().date()).days
-                weekday = date_obj.strftime("%A")
+                dias = {
+    "Monday": "Segunda-feira",
+    "Tuesday": "Terça-feira",
+    "Wednesday": "Quarta-feira",
+    "Thursday": "Quinta-feira",
+    "Friday": "Sexta-feira",
+    "Saturday": "Sábado",
+    "Sunday": "Domingo"
+}
+
+weekday_en = date_obj.strftime("%A")
+weekday = dias.get(weekday_en, weekday_en))
             except:
                 pass
 
