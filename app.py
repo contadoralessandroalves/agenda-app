@@ -11,12 +11,18 @@ app = Flask(__name__)
 # =========================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
+# Locale (com fallback seguro)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 except:
-    pass
+    try:
+        locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil.1252')
+    except:
+        pass  # usa padrão (inglês)
 
 def get_conn():
+    if not DATABASE_URL:
+        raise Exception("DATABASE_URL não configurado")
     return psycopg2.connect(DATABASE_URL)
 
 # =========================
@@ -41,8 +47,9 @@ def index():
 
         if date:
             try:
-                date_obj = datetime.strptime(str(date), "%Y-%m-%d")
-                days_left = (date_obj - datetime.now()).days
+                # date já vem como date do postgres, não precisa strptime
+                date_obj = date
+                days_left = (date_obj - datetime.now().date()).days
                 weekday = date_obj.strftime("%A")
             except:
                 pass
@@ -50,7 +57,7 @@ def index():
         tasks.append((id, task, date, days_left, weekday, comment))
 
     # ordenar por data mais próxima
-    tasks.sort(key=lambda x: x[2] if x[2] else "9999-12-31")
+    tasks.sort(key=lambda x: x[2] if x[2] else datetime.max.date())
 
     return render_template("index.html", tasks=tasks)
 
@@ -69,7 +76,7 @@ def add():
     c.execute("""
         INSERT INTO tasks (task, date, comment)
         VALUES (%s, %s, %s)
-    """, (task, date, comment))
+    """, (task, date if date else None, comment))
 
     conn.commit()
     conn.close()
