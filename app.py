@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from datetime import datetime
+from datetime import date
 import psycopg2
 import os
 import locale
@@ -45,7 +45,7 @@ def index():
         if date:
             try:
                 date_obj = date
-                days_left = (date_obj - datetime.now().date()).days
+                days_left = (date_obj - date.today()).days + 1
 
                 dias = {
                     "Monday": "Segunda-feira",
