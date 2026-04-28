@@ -1,61 +1,84 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Agenda App</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Agenda</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .late { color: red; }
+        .soon { color: orange; }
+        .ok { color: green; }
+    </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>📅 Minha Agenda</h1>
 
-        <!-- FORMULÁRIO -->
-        <form action="/add" method="POST">
-            <input type="text" name="task" placeholder="Nova tarefa" required>
+<h2>📋 Tarefas</h2>
 
-            <input type="date" name="date">
+<form action="/add" method="post">
+    <input type="text" name="task" placeholder="Tarefa" required>
+    <input type="date" name="date">
+    <input type="text" name="comment" placeholder="Comentário">
+    <button type="submit">Adicionar</button>
+</form>
 
-            <input type="text" name="comment" placeholder="Comentário">
+<br>
 
-            <button type="submit">Adicionar</button>
-        </form>
+<table>
+    <tr>
+        <th>Tarefa</th>
+        <th>Data</th>
+        <th>Dias</th>
+        <th>Comentário</th>
+        <th>Excluir</th>
+    </tr>
 
-        <hr>
+    {% for t in tasks %}
+    <tr>
+        <td>{{ t[1][:40] }}</td>
 
-        <!-- LISTA DE TAREFAS -->
-        <h2>Tarefas</h2>
+        <td>
+            {{ t[2] }} <br>
+            <small>{{ t[4] }}</small>
+        </td>
 
-        <ul>
-            {% for t in tasks %}
-            <li>
-                <div class="task-box">
-                    
-                    <strong>{{ t[1] }}</strong>
+        <td>
+            {% if t[3] is not none %}
+                {% if t[3] < 0 %}
+                    <span class="late">{{ t[3] }} dias</span>
+                {% elif t[3] <= 3 %}
+                    <span class="soon">{{ t[3] }} dias</span>
+                {% else %}
+                    <span class="ok">{{ t[3] }} dias</span>
+                {% endif %}
+            {% endif %}
+        </td>
 
-                    {% if t[2] %}
-                        <p>📅 Data: {{ t[2] }}</p>
-                    {% else %}
-                        <p>📅 Sem data</p>
-                    {% endif %}
+        <td>{{ t[5][:80] }}</td>
 
-                    {% if t[3] is not none %}
-                        <p>⏳ Dias restantes: {{ t[3] }}</p>
-                    {% endif %}
+        <td>
+            <a href="/delete/{{ t[0] }}">❌</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
 
-                    {% if t[4] %}
-                        <p>📝 {{ t[4] }}</p>
-                    {% endif %}
-
-                    <a href="/delete/{{ t[0] }}">
-                        ❌ Excluir
-                    </a>
-
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-
-    </div>
 </body>
 </html>
