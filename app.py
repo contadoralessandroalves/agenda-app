@@ -1,86 +1,92 @@
 from flask import Flask, render_template, request, redirect
 from datetime import datetime
-import sqlite3
+import psycopg2
+import os
+import locale
 
 app = Flask(__name__)
 
 # =========================
-# BANCO DE DADOS
+# CONFIG
 # =========================
-def init_db():
-    conn = sqlite3.connect("tasks.db")
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS tasks (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            task TEXT,
-            date TEXT,
-            days_left INTEGER,
-            comment TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-init_db()
+try:
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+except:
+    pass
+
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
 
 # =========================
-# LISTAR TAREFAS
+# LISTAR
 # =========================
 @app.route("/")
 def index():
-    conn = sqlite3.connect("tasks.db")
+    conn = get_conn()
     c = conn.cursor()
-    c.execute("SELECT id, task, date, days_left, comment FROM tasks")
-    tasks = c.fetchall()
+
+    c.execute("SELECT id, task, date, comment FROM tasks")
+    rows = c.fetchall()
     conn.close()
+
+    tasks = []
+
+    for row in rows:
+        id, task, date, comment = row
+
+        days_left = None
+        weekday = ""
+
+        if date:
+            try:
+                date_obj = datetime.strptime(str(date), "%Y-%m-%d")
+                days_left = (date_obj - datetime.now()).days
+                weekday = date_obj.strftime("%A")
+            except:
+                pass
+
+        tasks.append((id, task, date, days_left, weekday, comment))
+
+    # ordenar por data mais próxima
+    tasks.sort(key=lambda x: x[2] if x[2] else "9999-12-31")
 
     return render_template("index.html", tasks=tasks)
 
 # =========================
-# ADICIONAR TAREFA
+# ADICIONAR
 # =========================
 @app.route("/add", methods=["POST"])
 def add():
     task = request.form["task"]
-    date_str = request.form["date"]
+    date = request.form["date"]
     comment = request.form["comment"]
 
-    days_left = None
-
-    if date_str:
-        try:
-            date = datetime.strptime(date_str, "%D-%m-%y")
-            days_left = (date - datetime.now()).days
-        except:
-            pass
-
-    conn = sqlite3.connect("tasks.db")
+    conn = get_conn()
     c = conn.cursor()
+
     c.execute("""
-        INSERT INTO tasks (task, date, days_left, comment)
-        VALUES (?, ?, ?, ?)
-    """, (task, date_str, days_left, comment))
+        INSERT INTO tasks (task, date, comment)
+        VALUES (%s, %s, %s)
+    """, (task, date, comment))
+
     conn.commit()
     conn.close()
 
     return redirect("/")
 
 # =========================
-# DELETAR TAREFA
+# DELETE
 # =========================
 @app.route("/delete/<int:id>")
 def delete(id):
-    conn = sqlite3.connect("tasks.db")
+    conn = get_conn()
     c = conn.cursor()
-    c.execute("DELETE FROM tasks WHERE id=?", (id,))
+
+    c.execute("DELETE FROM tasks WHERE id=%s", (id,))
+
     conn.commit()
     conn.close()
 
     return redirect("/")
-
-# =========================
-# RODAR APP
-# =========================
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
