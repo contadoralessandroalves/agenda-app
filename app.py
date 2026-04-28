@@ -11,14 +11,11 @@ app = Flask(__name__)
 # =========================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Locale (com fallback seguro)
+# Locale (não quebra no Render)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 except:
-    try:
-        locale.setlocale(locale.LC_TIME, 'Portuguese_Brazil.1252')
-    except:
-        pass  # usa padrão (inglês)
+    pass
 
 def get_conn():
     if not DATABASE_URL:
@@ -47,21 +44,22 @@ def index():
 
         if date:
             try:
-                # date já vem como date do postgres, não precisa strptime
                 date_obj = date
                 days_left = (date_obj - datetime.now().date()).days
-                dias = {
-    "Monday": "Segunda-feira",
-    "Tuesday": "Terça-feira",
-    "Wednesday": "Quarta-feira",
-    "Thursday": "Quinta-feira",
-    "Friday": "Sexta-feira",
-    "Saturday": "Sábado",
-    "Sunday": "Domingo"
-}
 
-weekday_en = date_obj.strftime("%A")
-weekday = dias.get(weekday_en, weekday_en))
+                dias = {
+                    "Monday": "Segunda-feira",
+                    "Tuesday": "Terça-feira",
+                    "Wednesday": "Quarta-feira",
+                    "Thursday": "Quinta-feira",
+                    "Friday": "Sexta-feira",
+                    "Saturday": "Sábado",
+                    "Sunday": "Domingo"
+                }
+
+                weekday_en = date_obj.strftime("%A")
+                weekday = dias.get(weekday_en, weekday_en)
+
             except:
                 pass
 
