@@ -50,7 +50,7 @@ def add():
 
     if date_str:
         try:
-            date = datetime.strptime(date_str, "%Y-%m-%d")
+            date = datetime.strptime(date_str, "%D-%m-%y")
             days_left = (date - datetime.now()).days
         except:
             pass
