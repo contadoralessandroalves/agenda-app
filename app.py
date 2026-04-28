@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from datetime import date
+from datetime import date, datetime
 import psycopg2
 import os
 import locale
@@ -11,7 +11,6 @@ app = Flask(__name__)
 # =========================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Locale (não quebra no Render)
 try:
     locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 except:
@@ -37,14 +36,17 @@ def index():
     tasks = []
 
     for row in rows:
-        id, task, date, comment = row
+        id, task, task_date, comment = row
 
         days_left = None
         weekday = ""
+        date_str = None
 
-        if date:
+        if task_date:
             try:
-                date_obj = date
+                date_obj = task_date
+                date_str = date_obj.strftime("%Y-%m-%d")
+
                 days_left = (date_obj - date.today()).days + 1
 
                 dias = {
@@ -63,10 +65,9 @@ def index():
             except:
                 pass
 
-        tasks.append((id, task, date, days_left, weekday, comment))
+        tasks.append((id, task, date_str, days_left, weekday, comment))
 
-    # ordenar por data mais próxima
-    tasks.sort(key=lambda x: x[2] if x[2] else datetime.max.date())
+    tasks.sort(key=lambda x: x[2] if x[2] else "9999-12-31")
 
     return render_template("index.html", tasks=tasks)
 
@@ -76,7 +77,7 @@ def index():
 @app.route("/add", methods=["POST"])
 def add():
     task = request.form["task"]
-    date = request.form["date"]
+    date_value = request.form["date"]
     comment = request.form["comment"]
 
     conn = get_conn()
@@ -85,7 +86,7 @@ def add():
     c.execute("""
         INSERT INTO tasks (task, date, comment)
         VALUES (%s, %s, %s)
-    """, (task, date if date else None, comment))
+    """, (task, date_value if date_value else None, comment))
 
     conn.commit()
     conn.close()
