@@ -1,84 +1,133 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
+    <meta charset="UTF-8">
     <title>Agenda</title>
+
     <style>
         body {
             font-family: Arial;
             padding: 20px;
+            background: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input, button {
+            padding: 8px;
         }
 
         table {
             width: 100%;
+            background: white;
             border-collapse: collapse;
         }
 
         th, td {
-            border-bottom: 1px solid #ccc;
             padding: 10px;
-            text-align: left;
+            border: 1px solid #ddd;
+            text-align: center;
         }
 
         th {
-            background: #f4f4f4;
+            background: #333;
+            color: white;
         }
 
-        .late { color: red; }
-        .soon { color: orange; }
-        .ok { color: green; }
+        .negativo {
+            color: red;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-<h2>📋 Tarefas</h2>
+<h1>📅 Minha Agenda</h1>
 
-<form action="/add" method="post">
+<form action="/add" method="POST">
     <input type="text" name="task" placeholder="Tarefa" required>
     <input type="date" name="date">
     <input type="text" name="comment" placeholder="Comentário">
     <button type="submit">Adicionar</button>
 </form>
 
-<br>
-
 <table>
     <tr>
         <th>Tarefa</th>
         <th>Data</th>
-        <th>Dias</th>
+        <th>Dia</th>
+        <th>Dias Restantes</th>
         <th>Comentário</th>
-        <th>Excluir</th>
+        <th>Ação</th>
     </tr>
 
-    {% for t in tasks %}
+    {% for task in tasks %}
     <tr>
-        <td>{{ t[1][:40] }}</td>
+        <td>{{ task[1] }}</td>
+        <td>{{ task[2] }}</td>
+        <td>{{ task[4] }}</td>
 
-        <td>
-            {{ t[2] }} <br>
-            <small>{{ t[4] }}</small>
+        <td class="dias-restantes" data-date="{{ task[2] }}">
+            {{ task[3] }}
         </td>
 
-        <td>
-            {% if t[3] is not none %}
-                {% if t[3] < 0 %}
-                    <span class="late">{{ t[3] }} dias</span>
-                {% elif t[3] <= 3 %}
-                    <span class="soon">{{ t[3] }} dias</span>
-                {% else %}
-                    <span class="ok">{{ t[3] }} dias</span>
-                {% endif %}
-            {% endif %}
-        </td>
-
-        <td>{{ t[5][:80] }}</td>
+        <td>{{ task[5] }}</td>
 
         <td>
-            <a href="/delete/{{ t[0] }}">❌</a>
+            <a href="/delete/{{ task[0] }}">Excluir</a>
         </td>
     </tr>
     {% endfor %}
 </table>
+
+<script>
+function calcularDiasRestantes(dataStr) {
+    if (!dataStr) return "";
+
+    const hoje = new Date();
+    const data = new Date(dataStr);
+
+    hoje.setHours(0,0,0,0);
+    data.setHours(0,0,0,0);
+
+    const diff = Math.ceil((data - hoje) / (1000 * 60 * 60 * 24)) + 1;
+
+    return diff;
+}
+
+function atualizarDias() {
+    document.querySelectorAll(".dias-restantes").forEach(el => {
+        const data = el.dataset.date;
+
+        if (data) {
+            const dias = calcularDiasRestantes(data);
+
+            el.innerText = dias;
+
+            if (dias < 0) {
+                el.classList.add("negativo");
+            } else {
+                el.classList.remove("negativo");
+            }
+        }
+    });
+}
+
+// roda ao abrir
+atualizarDias();
+
+// atualiza sozinho
+setInterval(atualizarDias, 60000);
+</script>
 
 </body>
 </html>
