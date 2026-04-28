@@ -35,16 +35,32 @@
         th, td {
             padding: 10px;
             border: 1px solid #ddd;
-            text-align: center;
         }
 
         th {
             background: #333;
             color: white;
+            text-align: center;
         }
 
-        .negativo {
+        /* ✅ Alinhar texto à esquerda */
+        .text-left {
+            text-align: left;
+        }
+
+        /* ✅ Cores dos dias */
+        .vermelho {
             color: red;
+            font-weight: bold;
+        }
+
+        .amarelo {
+            color: #d4a017;
+            font-weight: bold;
+        }
+
+        .verde {
+            color: green;
             font-weight: bold;
         }
     </style>
@@ -72,15 +88,19 @@
 
     {% for task in tasks %}
     <tr>
-        <td>{{ task[1] }}</td>
+        <!-- ✅ alinhado à esquerda -->
+        <td class="text-left">{{ task[1] }}</td>
+
         <td>{{ task[2] }}</td>
         <td>{{ task[4] }}</td>
 
+        <!-- dias restantes -->
         <td class="dias-restantes" data-date="{{ task[2] }}">
             {{ task[3] }}
         </td>
 
-        <td>{{ task[5] }}</td>
+        <!-- ✅ alinhado à esquerda -->
+        <td class="text-left">{{ task[5] }}</td>
 
         <td>
             <a href="/delete/{{ task[0] }}">Excluir</a>
@@ -99,9 +119,20 @@ function calcularDiasRestantes(dataStr) {
     hoje.setHours(0,0,0,0);
     data.setHours(0,0,0,0);
 
-    const diff = Math.ceil((data - hoje) / (1000 * 60 * 60 * 24)) + 1;
+    return Math.ceil((data - hoje) / (1000 * 60 * 60 * 24)) + 1;
+}
 
-    return diff;
+function aplicarCor(el, dias) {
+    el.classList.remove("vermelho", "amarelo", "verde");
+
+    if (dias === 1) {
+        el.classList.add("vermelho");
+    } else if (dias === 2 || dias === 3) {
+        el.classList.add("amarelo");
+    } else if (dias >= 4 && dias < 10) {
+        el.classList.add("verde");
+    }
+    // 10+ dias = sem cor (preto normal)
 }
 
 function atualizarDias() {
@@ -113,16 +144,12 @@ function atualizarDias() {
 
             el.innerText = dias;
 
-            if (dias < 0) {
-                el.classList.add("negativo");
-            } else {
-                el.classList.remove("negativo");
-            }
+            aplicarCor(el, dias);
         }
     });
 }
 
-// roda ao abrir
+// executa ao abrir
 atualizarDias();
 
 // atualiza sozinho
